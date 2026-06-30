@@ -130,12 +130,12 @@ const barObserver = new IntersectionObserver((entries) => {
 
 skillBars.forEach(bar => barObserver.observe(bar));
 
-// ---- Contact form (demo) ----
+// ---- Contact form ----
 const form = document.getElementById('contactForm');
 const submitBtn = document.getElementById('submitBtn');
 const feedback = document.getElementById('formFeedback');
 
-form.addEventListener('submit', e => {
+form.addEventListener('submit', async e => {
   e.preventDefault();
 
   const name = form.name.value.trim();
@@ -157,15 +157,29 @@ form.addEventListener('submit', e => {
   submitBtn.disabled = true;
   submitBtn.textContent = 'Enviando…';
 
-  // Simulate async send
-  setTimeout(() => {
-    feedback.textContent = 'Mensagem enviada! Responderei em breve.';
-    feedback.className = 'form__feedback success';
-    form.reset();
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (response.ok) {
+      feedback.textContent = 'Mensagem enviada! Responderei em breve.';
+      feedback.className = 'form__feedback success';
+      form.reset();
+    } else {
+      feedback.textContent = 'Erro ao enviar. Tente novamente.';
+      feedback.className = 'form__feedback error';
+    }
+  } catch {
+    feedback.textContent = 'Erro de conexão. Tente novamente.';
+    feedback.className = 'form__feedback error';
+  } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Enviar mensagem';
     setTimeout(() => { feedback.textContent = ''; feedback.className = 'form__feedback'; }, 5000);
-  }, 1200);
+  }
 });
 
 // ---- Footer year ----
